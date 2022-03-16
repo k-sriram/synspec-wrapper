@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+
 from synspec.synspec import Synspec
 
 
@@ -19,9 +20,13 @@ def test_synspec():
     # Create a temporary directory to test in.
     with tempfile.TemporaryDirectory() as tdir:
         model = "hhe35lt"
+        modeldir = f"{cwd}/tests/models/{model}"
 
-        shutil.copytree(f"models/{model}/input", f"{tdir}")
-        os.symlink("models/{model}/data", f"{tdir}/data", target_is_directory=True)
+        # Copy the model to the temporary directory.
+        files = ["fort.19", "fort.55", f"{model}.5", f"{model}.7"]
+        for file in files:
+            shutil.copy(f"{modeldir}/input/{file}", tdir)
+        os.symlink(f"{modeldir}/data", f"{tdir}/data", target_is_directory=True)
 
         os.chdir(tdir)
 
@@ -29,7 +34,6 @@ def test_synspec():
         synspec = Synspec("synspec", 51)
         synspec.run(model)
 
-        os.chdir(cwd)
         # Check that the output files are correct.
         for unit, ext in [
             ("7", "spec"),
@@ -38,5 +42,5 @@ def test_synspec():
             ("17", "cont"),
         ]:
             assert compare_files(
-                f"models/{model}/output/{model}.{ext}", f"{tdir}/fort.{unit}"
+                f"{modeldir}/output/{model}.{ext}", f"{tdir}/fort.{unit}"
             )
