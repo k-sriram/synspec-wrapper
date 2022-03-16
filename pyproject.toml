@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=42.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+minversion = "7.1.0"
+testpaths = ["tests"]
+
+[tool.mypy]
+files = ["src/synspec", "tests"]
+warn_unused_ignores = true
+show_error_codes = true
+ignore_missing_imports = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+[tool.isort]
+profile = "black"
