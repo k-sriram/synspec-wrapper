@@ -1,5 +1,5 @@
-import os
 import subprocess
+from pathlib import Path
 
 
 class Synspec:
@@ -11,10 +11,20 @@ class Synspec:
 
     def run(self, model: str) -> None:
         """Runs synspec with the given model"""
-        unit8 = "fort.8"
-        if os.path.exists(unit8):
-            os.remove(unit8)
-        os.symlink(f"{model}.7", unit8)
+        symlinkf(f"{model}.7", "fort.8")
 
         with open(f"{model}.5") as modelinput:
             subprocess.run([self.synspec], stdin=modelinput, check=True)
+
+
+# Utils
+
+
+def symlinkf(
+    src: str | Path, dst: str | Path, target_is_directory: bool = False
+) -> None:
+    """Symlink a file. If the file already exists, delete it first."""
+    dst = Path(dst)
+    if dst.exists():
+        dst.unlink()
+    dst.symlink_to(src, target_is_directory=target_is_directory)
