@@ -29,6 +29,7 @@ class Synspec:
         model: str,
         rundir: str | Path | None = ".",
         outdir: str | Path | None = None,
+        outfile: str | None = None,
     ) -> None:
         """Runs synspec with the given model. If rundir is given, the files are
         linked to that directory and synspec is run there."""
@@ -51,14 +52,17 @@ class Synspec:
             outdir = Path(outdir).resolve()
         outdir.mkdir(exist_ok=True)
 
+        if outfile is None:
+            outfile = model
+
         for unit, ext in [
             ("7", "spec"),
             ("12", "iden"),
             ("16", "eqws"),
             ("17", "cont"),
         ]:
-            shutil.copyfile(rundir / f"fort.{unit}", outdir / f"{model}.{ext}")
-        shutil.copyfile(rundir / "fort.log", outdir / f"{model}.log")
+            shutil.copyfile(rundir / f"fort.{unit}", outdir / f"{outfile}.{ext}")
+        shutil.copyfile(rundir / "fort.log", outdir / f"{outfile}.log")
 
     def copy_to_rundir(self, model: str, rundir: str | Path | None) -> Path:
         if rundir is None:
