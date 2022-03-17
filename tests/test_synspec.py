@@ -140,3 +140,28 @@ def test_synspec_outdir(tempdir: str, outdir: str) -> None:
         assert compare_files(
             f"{modeldir}/output/{model}.{ext}", f"{outdir}/{model}.{ext}"
         )
+
+
+def test_synspec_outfilenames(tempdir: str) -> None:
+    outfile = "test"
+    model = "hhe35lt"
+    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
+
+    modeldir = copy_model(model, files, tempdir)
+
+    os.chdir(tempdir)
+    rundir = f"{tempdir}/run"
+    outdir = f"{tempdir}/output"
+    os.makedirs(rundir)
+    os.makedirs(outdir)
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    synspec.add_link("data")
+    synspec.run(model, rundir=rundir, outdir=outdir, outfile=outfile)
+
+    # Check that the output files are correct.
+    for ext in ["spec", "log"]:
+        assert compare_files(
+            f"{modeldir}/output/{model}.{ext}", f"{outdir}/{outfile}.{ext}"
+        )
