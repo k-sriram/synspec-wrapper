@@ -165,3 +165,24 @@ def test_synspec_outfilenames(tempdir: str) -> None:
         assert compare_files(
             f"{modeldir}/output/{model}.{ext}", f"{outdir}/{outfile}.{ext}"
         )
+
+
+def test_synspec_no_indir(tempdir: str) -> None:
+    model = "hhe35lt"
+    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
+
+    modeldir = copy_model(model, files, tempdir)
+
+    os.chdir(tempdir)
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    synspec.add_link("data")
+    synspec.run(model, rundir=None)
+
+    for ext in ["spec", "log"]:
+        assert compare_files(
+            f"{modeldir}/output/{model}.{ext}", f"{tempdir}/{model}.{ext}"
+        )
+    for unit in ["7", "12", "16", "17"]:
+        assert not os.path.isfile(f"{tempdir}/fort.{unit}")
