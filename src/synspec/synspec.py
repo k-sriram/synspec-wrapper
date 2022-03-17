@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -23,7 +24,12 @@ class Synspec:
             linkto = linkfrom
         self.linkfiles[linkto] = linkfrom
 
-    def run(self, model: str, rundir: str | Path | None = ".") -> None:
+    def run(
+        self,
+        model: str,
+        rundir: str | Path | None = ".",
+        outdir: str | Path | None = None,
+    ) -> None:
         """Runs synspec with the given model. If rundir is given, the files are
         linked to that directory and synspec is run there."""
 
@@ -32,8 +38,27 @@ class Synspec:
         self.check_files(model, rundir)
         utils.symlinkf(f"{model}.7", rundir / "fort.8")
 
-        with open(f"{model}.5") as modelinput:
-            subprocess.run([self.synspec], stdin=modelinput, cwd=rundir, check=True)
+        with open(rundir / f"{model}.5") as modelinput, open(
+            rundir / "fort.log", "w"
+        ) as log:
+            subprocess.run(
+                [self.synspec], stdin=modelinput, stdout=log, cwd=rundir, check=True
+            )
+
+        if outdir is None:
+            outdir = rundir
+        else:
+            outdir = Path(outdir).resolve()
+        outdir.mkdir(exist_ok=True)
+
+        for unit, ext in [
+            ("7", "spec"),
+            ("12", "iden"),
+            ("16", "eqws"),
+            ("17", "cont"),
+        ]:
+            shutil.copyfile(rundir / f"fort.{unit}", outdir / f"{model}.{ext}")
+        shutil.copyfile(rundir / "fort.log", outdir / f"{model}.log")
 
     def copy_to_rundir(self, model: str, rundir: str | Path | None) -> Path:
         if rundir is None:

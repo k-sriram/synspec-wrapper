@@ -134,6 +134,8 @@ def test_synspec_outdir(tempdir: str, outdir: str) -> None:
     synspec.run(model, outdir=outdir)
 
     # Check that the output files are correct.
+    if outdir is None:
+        outdir = tempdir
     for ext in ["spec", "iden", "eqws", "cont", "log"]:
         assert compare_files(
             f"{modeldir}/output/{model}.{ext}", f"{outdir}/{model}.{ext}"
