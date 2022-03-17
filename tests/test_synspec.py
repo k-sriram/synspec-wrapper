@@ -2,7 +2,12 @@ import os
 import shutil
 import tempfile
 
+import pytest
+
 from synspec.synspec import Synspec
+
+PROJECT_ROOT = os.getcwd()
+MODELS_ROOT = f"{PROJECT_ROOT}/tests/models"
 
 
 def compare_files(file1: str, file2: str) -> bool:
@@ -14,33 +19,43 @@ def compare_files(file1: str, file2: str) -> bool:
     return True
 
 
-def test_synspec():
-    cwd = os.getcwd()
+def copy_model(model, files, dst):
+    # Copy the model to the temporary directory.
+    modeldir = f"{MODELS_ROOT}/{model}"
+    for file in files:
+        shutil.copy(f"{modeldir}/input/{file}".format(model=model), dst)
+    os.symlink(f"{modeldir}/data", f"{dst}/data", target_is_directory=True)
+    return modeldir
 
-    # Create a temporary directory to test in.
-    with tempfile.TemporaryDirectory() as tdir:
-        model = "hhe35lt"
-        modeldir = f"{cwd}/tests/models/{model}"
 
-        # Copy the model to the temporary directory.
-        files = ["fort.19", "fort.55", f"{model}.5", f"{model}.7"]
-        for file in files:
-            shutil.copy(f"{modeldir}/input/{file}", tdir)
-        os.symlink(f"{modeldir}/data", f"{tdir}/data", target_is_directory=True)
+@pytest.fixture(scope="function")
+def tempdir():
+    try:
+        with tempfile.TemporaryDirectory() as tempdir:
+            yield tempdir
+    finally:
+        os.chdir(PROJECT_ROOT)  # Ensure that we are returned to the original directory.
 
-        os.chdir(tdir)
 
-        # Create a Synspec object.
-        synspec = Synspec("synspec", 51)
-        synspec.run(model)
+def test_synspec(tempdir):
+    model = "hhe35lt"
+    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
 
-        # Check that the output files are correct.
-        for unit, ext in [
-            ("7", "spec"),
-            ("12", "iden"),
-            ("16", "eqws"),
-            ("17", "cont"),
-        ]:
-            assert compare_files(
-                f"{modeldir}/output/{model}.{ext}", f"{tdir}/fort.{unit}"
-            )
+    modeldir = copy_model(model, files, tempdir)
+
+    os.chdir(tempdir)
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    synspec.run(model)
+
+    # Check that the output files are correct.
+    for unit, ext in [
+        ("7", "spec"),
+        ("12", "iden"),
+        ("16", "eqws"),
+        ("17", "cont"),
+    ]:
+        assert compare_files(
+            f"{modeldir}/output/{model}.{ext}", f"{tempdir}/fort.{unit}"
+        )
