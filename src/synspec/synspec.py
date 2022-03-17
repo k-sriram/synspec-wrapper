@@ -1,5 +1,6 @@
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 from synspec import utils
@@ -33,6 +34,12 @@ class Synspec:
     ) -> None:
         """Runs synspec with the given model. If rundir is given, the files are
         linked to that directory and synspec is run there."""
+
+        if rundir is None:
+            if outdir is None:
+                outdir = Path.cwd()
+            tempdir = tempfile.TemporaryDirectory()
+            rundir = Path(tempdir.name)
 
         rundir = self.copy_to_rundir(model, rundir)
 
