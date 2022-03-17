@@ -83,3 +83,30 @@ def test_with_missing_files(missingfile: str, tempdir: str) -> None:
     synspec = Synspec("synspec", 51)
     with pytest.raises(FileNotFoundError):
         synspec.run(model)
+
+
+def test_synspec_indir(tempdir: str) -> None:
+    model = "hhe35lt"
+    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
+
+    modeldir = copy_model(model, files, tempdir)
+
+    os.chdir(tempdir)
+    outdir = f"{tempdir}/output"
+    os.makedirs(outdir)
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    synspec.add_link("data")
+    synspec.run(model, rundir=outdir)
+
+    # Check that the output files are correct.
+    for unit, ext in [
+        ("7", "spec"),
+        ("12", "iden"),
+        ("16", "eqws"),
+        ("17", "cont"),
+    ]:
+        assert compare_files(
+            f"{modeldir}/output/{model}.{ext}", f"{outdir}/fort.{unit}"
+        )
