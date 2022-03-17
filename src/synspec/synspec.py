@@ -32,8 +32,13 @@ class Synspec:
         outdir: str | Path | None = None,
         outfile: str | None = None,
     ) -> None:
-        """Runs synspec with the given model. If rundir is given, the files are
-        linked to that directory and synspec is run there."""
+        """Runs synspec with the given model.
+        rundir: directory to run synspec in.
+                defaults to running in the current directory.
+                if explicitly set to None, a temporary directory is used.
+        outdir: directory to copy the output files to.
+        outfile: name (without extension) of the output files.
+        """
 
         if rundir is None:
             if outdir is None:
