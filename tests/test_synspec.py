@@ -19,7 +19,7 @@ def compare_files(file1: str, file2: str) -> bool:
     return True
 
 
-def copy_model(model, files, dst):
+def copy_model(model: str, files: list[str], dst: str) -> str:
     # Copy the model to the temporary directory.
     modeldir = f"{MODELS_ROOT}/{model}"
     for file in files:
@@ -37,7 +37,7 @@ def tempdir():
         os.chdir(PROJECT_ROOT)  # Ensure that we are returned to the original directory.
 
 
-def test_synspec(tempdir):
+def test_synspec(tempdir: str) -> None:
     model = "hhe35lt"
     files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
 
@@ -59,3 +59,27 @@ def test_synspec(tempdir):
         assert compare_files(
             f"{modeldir}/output/{model}.{ext}", f"{tempdir}/fort.{unit}"
         )
+
+
+@pytest.mark.parametrize(
+    "missingfile",
+    [
+        "fort.19",
+        "fort.55",
+        "{model}.5",
+        "{model}.7",
+    ],
+)
+def test_with_missing_files(missingfile: str, tempdir: str) -> None:
+    model = "hhe35lt"
+    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
+    files.remove(missingfile)
+
+    _ = copy_model(model, files, tempdir)
+
+    os.chdir(tempdir)
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    with pytest.raises(FileNotFoundError):
+        synspec.run(model)
