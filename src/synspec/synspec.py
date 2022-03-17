@@ -40,12 +40,17 @@ class Synspec:
                 outdir = Path.cwd()
             tempdir = tempfile.TemporaryDirectory()
             rundir = Path(tempdir.name)
+        try:
+            rundir = self._copy_to_rundir(model, rundir)
+            self._check_files(model, rundir)
+            self._run(model, rundir)
+            self._extract_outfiles(model, rundir, outdir, outfile)
+        finally:
+            if "tempdir" in locals():
+                tempdir.cleanup()
 
-        rundir = self.copy_to_rundir(model, rundir)
-
-        self.check_files(model, rundir)
+    def _run(self, model: str, rundir: Path) -> None:
         utils.symlinkf(f"{model}.7", rundir / "fort.8")
-
         with open(rundir / f"{model}.5") as modelinput, open(
             rundir / "fort.log", "w"
         ) as log:
@@ -53,6 +58,9 @@ class Synspec:
                 [self.synspec], stdin=modelinput, stdout=log, cwd=rundir, check=True
             )
 
+    def _extract_outfiles(
+        self, model: str, rundir: Path, outdir: Path | str | None, outfile: str | None
+    ) -> None:
         if outdir is None:
             outdir = rundir
         else:
@@ -71,7 +79,7 @@ class Synspec:
             shutil.copyfile(rundir / f"fort.{unit}", outdir / f"{outfile}.{ext}")
         shutil.copyfile(rundir / "fort.log", outdir / f"{outfile}.log")
 
-    def copy_to_rundir(self, model: str, rundir: str | Path | None) -> Path:
+    def _copy_to_rundir(self, model: str, rundir: str | Path | None) -> Path:
         if rundir is None:
             return Path.cwd()
         rundir = Path(rundir).resolve()
@@ -82,7 +90,7 @@ class Synspec:
                 utils.symlinkf(src, rundir / dst.format(model=model))
         return rundir
 
-    def check_files(self, model: str, rundir: Path) -> None:
+    def _check_files(self, model: str, rundir: Path) -> None:
         """Checks if the required files exist."""
         files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
         for file in files:
