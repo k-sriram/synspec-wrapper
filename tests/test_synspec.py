@@ -186,3 +186,12 @@ def test_synspec_no_indir(tempdir: str) -> None:
         )
     for unit in ["7", "12", "16", "17"]:
         assert not os.path.isfile(f"{tempdir}/fort.{unit}")
+
+
+@pytest.mark.skip(reason="Not implemented yet")
+def test_synspec_simultaneous_run(tempdir: str) -> None:
+    """This test should try to run two Synspec objects at the same time. The
+    expected behaviour is to either raise an exception or to for the second
+    wait until the first is finished.
+    """
+    raise NotImplementedError("This test is not implemented yet.")

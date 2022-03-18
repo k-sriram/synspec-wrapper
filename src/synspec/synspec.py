@@ -1,7 +1,10 @@
+import functools
 import shutil
 import subprocess
 import tempfile
+from contextlib import _GeneratorContextManager, contextmanager
 from pathlib import Path
+from typing import Callable, Iterator
 
 from synspec import utils
 
@@ -43,16 +46,18 @@ class Synspec:
         if rundir is None:
             if outdir is None:
                 outdir = Path.cwd()
-            tempdir = tempfile.TemporaryDirectory()
-            rundir = Path(tempdir.name)
-        try:
-            rundir = self._copy_to_rundir(model, rundir)
+            rdprovider: Callable[[], _GeneratorContextManager[Path]] = tempdir
+        else:
+            rundir = Path(rundir).resolve()
+            rundir.mkdir(exist_ok=True)
+            rdprovider = functools.partial(
+                utils.folderlock, path=rundir, lockfn="synspec.lock"
+            )
+        with rdprovider() as rundir:
+            self._copy_to_rundir(model, rundir)
             self._check_files(model, rundir)
             self._run(model, rundir)
             self._extract_outfiles(model, rundir, outdir, outfile)
-        finally:
-            if "tempdir" in locals():
-                tempdir.cleanup()
 
     def _run(self, model: str, rundir: Path) -> None:
         utils.symlinkf(f"{model}.7", rundir / "fort.8")
@@ -84,16 +89,11 @@ class Synspec:
             shutil.copyfile(rundir / f"fort.{unit}", outdir / f"{outfile}.{ext}")
         shutil.copyfile(rundir / "fort.log", outdir / f"{outfile}.log")
 
-    def _copy_to_rundir(self, model: str, rundir: str | Path | None) -> Path:
-        if rundir is None:
-            return Path.cwd()
-        rundir = Path(rundir).resolve()
+    def _copy_to_rundir(self, model: str, rundir: Path) -> None:
         if rundir != Path.cwd().resolve():
-            rundir.mkdir(exist_ok=True)
             for dst, src in self.linkfiles.items():
                 src = Path(str(src).format(model=model)).resolve()
                 utils.symlinkf(src, rundir / dst.format(model=model))
-        return rundir
 
     def _check_files(self, model: str, rundir: Path) -> None:
         """Checks if the required files exist."""
@@ -101,3 +101,10 @@ class Synspec:
         for file in files:
             if not Path(fn := rundir / file.format(model=model)).exists():
                 raise FileNotFoundError(f"{fn} not found")
+
+
+@contextmanager
+def tempdir() -> Iterator[Path]:
+    """Context manager for temporary directories."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield Path(tmpdir).resolve()
