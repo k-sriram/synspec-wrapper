@@ -29,3 +29,8 @@ def test_read56_4() -> None:
 """
     with pytest.raises(ValueError):
         units.read56(text)
+
+
+def test_read56f() -> None:
+    file = "tests/models/EHeT30g4/fort.56"
+    assert units.read56f(file) == [(8, 3.847575e-03)]
