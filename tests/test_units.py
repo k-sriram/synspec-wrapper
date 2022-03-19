@@ -7,13 +7,13 @@ def test_read56_1() -> None:
     text = """1
 8 3.847575e-03
 """
-    units.read56(text) == [(8, 3.847575e-03)]
+    assert units.read56(text) == [(8, 3.847575e-03)]
 
 
 def test_read56_2() -> None:
     text = """0
 """
-    units.read56(text) == []
+    assert units.read56(text) == []
 
 
 def test_read56_3() -> None:
