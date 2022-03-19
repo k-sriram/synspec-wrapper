@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from synspec import units
@@ -32,5 +34,5 @@ def test_read56_4() -> None:
 
 
 def test_read56f() -> None:
-    file = "tests/models/EHeT30g4/fort.56"
+    file = Path("tests/models/EHeT30g4/fort.56")
     assert units.read56f(file) == [(8, 3.847575e-03)]

@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import NamedTuple
 
 ElementAbundance = NamedTuple(
@@ -6,9 +7,7 @@ ElementAbundance = NamedTuple(
 
 
 def read56(text: str) -> list[ElementAbundance]:
-    """Reads the contents of a .56 file.
-    Returns an iterator over the lines of the file.
-    """
+    """Converts the contents of a .56 file to a python list."""
     lines = text.splitlines()
     if len(lines) == 0:
         raise ValueError("unit 56 is empty")
@@ -19,3 +18,8 @@ def read56(text: str) -> list[ElementAbundance]:
         ElementAbundance(int(line.split()[0]), float(line.split()[1]))
         for line in lines[1:]
     ]
+
+
+def read56f(file: Path) -> list[ElementAbundance]:
+    """Reads the contents of a .56 file."""
+    return read56(file.read_text())
