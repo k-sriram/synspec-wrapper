@@ -1,3 +1,4 @@
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -74,3 +75,14 @@ def test_write56_5() -> None:
     """Atomic numbers must be unique."""
     with pytest.raises(ValueError):
         units.write56([(1, 1.0e-2), (1, 1.0e-3)])
+
+
+def test_write56f() -> None:
+    try:
+        _, fn = tempfile.mkstemp(suffix=".56")
+        f = Path(fn)
+        units.write56f(f, [(8, 3.847575e-03)])
+
+        assert f.read_text() == "1\n8 3.847575e-03\n"
+    finally:
+        f.unlink()
