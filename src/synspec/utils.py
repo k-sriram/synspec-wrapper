@@ -2,7 +2,7 @@ import time
 import uuid
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, TextIO
 
 
 def symlinkf(
@@ -72,3 +72,15 @@ def folderlock(
             if not lockfile.exists() or lockfile.read_text() != id_:
                 raise RuntimeError("Lockfile was modified")
         lockfile.unlink(missing_ok=True)
+
+
+def write_to_file(file: Path | str | TextIO, content: str) -> None:
+    if isinstance(file, Path):
+        file.write_text(content)
+    elif isinstance(file, TextIO):
+        file.write(content)
+    elif isinstance(file, str):
+        with open(file, "w") as f:
+            f.write(content)
+    else:
+        raise TypeError(f"file must be a Path, TextIO, or str, not {type(file)}")
