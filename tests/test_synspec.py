@@ -262,3 +262,23 @@ def test_synspec_no_files(tempdir: str) -> None:
     synspec = Synspec("synspec", 51)
     with pytest.raises(FileNotFoundError):
         synspec.run(model)
+
+
+def test_synspec_autoinclude_fort56(tempdir: str) -> None:
+    """Test that the Synspec object automatically includes fort.56 if it is
+    required.
+    """
+    model = "EHeT30g4"
+    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
+
+    modeldir = copy_model(model, files, tempdir)
+
+    os.chdir(tempdir)
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    synspec.add_link("data")
+    synspec.add_link("nst_l")
+    synspec.run(model)
+
+    compare_files(f"{modeldir}/output/{model}.spec", f"{tempdir}/fort.7")
