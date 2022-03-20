@@ -6,7 +6,7 @@ from contextlib import _GeneratorContextManager, contextmanager
 from pathlib import Path
 from typing import Callable, Iterator
 
-from synspec import utils
+from synspec import units, utils
 
 
 class Synspec:
@@ -97,6 +97,14 @@ class Synspec:
                 or src != Path(str(dst).format(model=model)).resolve()
             ):
                 utils.symlinkf(src, rundir / dst.format(model=model))
+        # Extra auto-links
+        if "fort.56" not in self.linkfiles and not Path(rundir / "fort.56").is_file():
+            config = units.read55f(rundir / "fort.55")
+            if config.ichemc != 0:
+                if Path("fort.56").is_file():
+                    utils.symlinkf("fort.56", rundir / "fort.56")
+                else:
+                    raise FileNotFoundError("Need for fort.56 detected but not found")
 
     def _check_files(self, model: str, rundir: Path) -> None:
         """Checks if the required files exist."""

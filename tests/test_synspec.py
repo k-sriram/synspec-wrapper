@@ -269,7 +269,7 @@ def test_synspec_autoinclude_fort56(tempdir: str) -> None:
     required.
     """
     model = "EHeT30g4"
-    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
+    files = ["fort.19", "fort.55", "fort.56", "{model}.5", "{model}.7"]
 
     modeldir = copy_model(model, files, tempdir)
 
