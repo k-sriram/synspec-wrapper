@@ -195,3 +195,32 @@ def test_synspec_simultaneous_run(tempdir: str) -> None:
     wait until the first is finished.
     """
     raise NotImplementedError("This test is not implemented yet.")
+
+
+def test_synspec_no_model(tempdir: str) -> None:
+    """Test that the Synspec object raises an exception if no model is given."""
+    model = "hhe35lt"
+    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
+
+    _ = copy_model(model, files, tempdir)
+
+    os.chdir(tempdir)
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    with pytest.raises(FileNotFoundError):
+        synspec.run(None)  # type: ignore
+
+
+def test_synspec_no_files(tempdir: str) -> None:
+    """Test that the Synspec object raises an exception if no files are given."""
+    model = "hhe35lt"
+
+    _ = copy_model(model, [], tempdir)
+
+    os.chdir(tempdir)
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    with pytest.raises(FileNotFoundError):
+        synspec.run(model)
