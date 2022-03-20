@@ -41,7 +41,7 @@ def test_read56_5() -> None:
 
 
 def test_read56f() -> None:
-    file = Path("tests/models/EHeT30g4/fort.56")
+    file = Path("tests/models/EHeT30g4/input/fort.56")
     assert units.read56f(file) == [(8, 3.847575e-03)]
 
 
@@ -137,7 +137,7 @@ def test_read55_2() -> None:
 
 
 def test_read55f() -> None:
-    file = Path("tests/models/EHeT30g4/fort.55")
+    file = Path("tests/models/EHeT30g4/input/fort.55")
     assert units.read55f(file) == units.SynConfig(
         *(
             [0, 32, 0]  # type: ignore
