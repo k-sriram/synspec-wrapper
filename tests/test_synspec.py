@@ -212,6 +212,44 @@ def test_synspec_no_model(tempdir: str) -> None:
         synspec.run(None)  # type: ignore
 
 
+def test_synspec_redirect_files(tempdir: str) -> None:
+    model = "hhe35lt"
+    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
+
+    modeldir = copy_model(model, files, tempdir)
+
+    os.chdir(tempdir)
+    os.rename("fort.19", "linelist")
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    synspec.add_link("data")
+    synspec.add_link("linelist", "fort.19")
+    synspec.run(model, rundir=None)
+
+    # Check that the output files are correct.
+    assert compare_files(f"{modeldir}/output/{model}.spec", f"{tempdir}/{model}.spec")
+
+
+def test_synspec_redirect_files_cwd(tempdir: str) -> None:
+    model = "hhe35lt"
+    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
+
+    modeldir = copy_model(model, files, tempdir)
+
+    os.chdir(tempdir)
+    os.rename("fort.19", "linelist")
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    synspec.add_link("data")
+    synspec.add_link("linelist", "fort.19")
+    synspec.run(model)
+
+    # Check that the output files are correct.
+    assert compare_files(f"{modeldir}/output/{model}.spec", f"{tempdir}/fort.7")
+
+
 def test_synspec_no_files(tempdir: str) -> None:
     """Test that the Synspec object raises an exception if no files are given."""
     model = "hhe35lt"
