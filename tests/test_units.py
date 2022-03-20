@@ -86,3 +86,95 @@ def test_write56f() -> None:
         assert f.read_text() == "1\n8 3.847575e-03\n"
     finally:
         f.unlink()
+
+
+def test_read55_1() -> None:
+    text = """1 47 0
+1 0 0 0
+0 0 0 0 0
+1 0 0 0 1
+0 0 0
+4465.0 4475.0 15 50 1.0-12 0.010000
+0 0i
+2.000000
+"""
+    assert units.read55(text) == units.SynConfig(
+        *(
+            [1, 47, 0]  # type: ignore
+            + [1, 0, 0, 0]
+            + [0, 0, 0, 0, 0]
+            + [1, 0, 0, 0, 1]
+            + [0, 0, 0]
+            + [4465.0, 4475.0, 15.0, 50.0, 1.0e-12, 0.01]  # type: ignore
+            + [[]]  # type: ignore
+            + [2.0]  # type: ignore
+        )
+    )
+
+
+def test_read55_2() -> None:
+    text = """0 32 0
+1 0 0 0
+0 0 0 0 0
+1 1 0 0 1
+0 1 1
+3000.0 6000.1 10 50 2.3e-6 0.01
+1 3 0i
+0.0
+"""
+    assert units.read55(text) == units.SynConfig(
+        *(
+            [0, 32, 0]  # type: ignore
+            + [1, 0, 0, 0]
+            + [0, 0, 0, 0, 0]
+            + [1, 1, 0, 0, 1]
+            + [0, 1, 1]
+            + [3000.0, 6000.1, 10.0, 50.0, 2.3e-6, 0.01]  # type: ignore
+            + [[3]]  # type: ignore
+            + [0.0]  # type: ignore
+        )
+    )
+
+
+def test_read55f() -> None:
+    file = Path("tests/models/EHeT30g4/fort.55")
+    assert units.read55f(file) == units.SynConfig(
+        *(
+            [0, 32, 0]  # type: ignore
+            + [1, 0, 0, 1]
+            + [0, 0, 0, 0, 0]
+            + [1, 0, 0, 0, 1]
+            + [0, 2, 1]
+            + [3500.0, 5500.0, 15, 50, 1.0e-12, 0.01]  # type: ignore
+            + [[]]  # type: ignore
+            + [21.0]  # type: ignore
+        )
+    )
+
+
+def test_write55_1() -> None:
+    assert (
+        units.write55(
+            units.SynConfig(
+                *(
+                    [0, 32, 0]  # type: ignore
+                    + [1, 0, 0, 1]
+                    + [0, 0, 0, 0, 0]
+                    + [1, 0, 0, 0, 1]
+                    + [0, 2, 1]
+                    + [3500.0, 5500.0, 15, 50, 1.0e-12, 0.01]  # type: ignore
+                    + [[]]  # type: ignore
+                    + [21.0]  # type: ignore
+                )
+            )
+        )
+        == """0 32 0
+1 0 0 1
+0 0 0 0 0
+1 0 0 0 1
+0 2 1
+3500.0 5500.0 15 50 1.0e-12 0.01
+0 0i
+21.0
+"""
+    )
