@@ -90,9 +90,12 @@ class Synspec:
         shutil.copyfile(rundir / "fort.log", outdir / f"{outfile}.log")
 
     def _copy_to_rundir(self, model: str, rundir: Path) -> None:
-        if rundir != Path.cwd().resolve():
-            for dst, src in self.linkfiles.items():
-                src = Path(str(src).format(model=model)).resolve()
+        for dst, src in self.linkfiles.items():
+            src = Path(str(src).format(model=model)).resolve()
+            if (
+                rundir != Path.cwd().resolve()
+                or src != Path(str(dst).format(model=model)).resolve()
+            ):
                 utils.symlinkf(src, rundir / dst.format(model=model))
 
     def _check_files(self, model: str, rundir: Path) -> None:
