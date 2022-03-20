@@ -84,3 +84,19 @@ def write_to_file(file: Path | str | TextIO, content: str) -> None:
             f.write(content)
     else:
         raise TypeError(f"file must be a Path, TextIO, or str, not {type(file)}")
+
+
+def fortfloat(text: str) -> float:
+    """Convert Fortran-style float to python float."""
+    text = text.strip()
+    if text.endswith("d"):
+        text = text[:-1]
+    text.replace("d", "e")
+    try:
+        return float(text)
+    except ValueError:
+        if len(text) > 1 and "-" in text[1:]:
+            text = f"{text[0]}{text[1:].replace('-', 'e-')}"
+            return float(text)
+        else:
+            raise
