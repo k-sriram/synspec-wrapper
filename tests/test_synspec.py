@@ -289,7 +289,7 @@ def test_synspec_autoinclude_readinput(tempdir: str) -> None:
     the input file ({model}.5).
     """
     model = "EHeT30g4"
-    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
+    files = ["fort.19", "fort.55", "{model}.5", "{model}.7", "fort.56"]
 
     modeldir = copy_model(model, files, tempdir)
 

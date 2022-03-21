@@ -90,6 +90,24 @@ class Synspec:
         shutil.copyfile(rundir / "fort.log", outdir / f"{outfile}.log")
 
     def _copy_to_rundir(self, model: str, rundir: Path) -> None:
+        # Read the input file to see if extra links are required.
+        inputfile = str(self.linkfiles["{model}.5"]).format(model=model)
+        with open(inputfile) as f:
+            modelinput = units.readinput(f.read())
+        reqs = []
+        if modelinput.get("finstd"):
+            reqs.append(modelinput["finstd"])
+        if "ions" in modelinput:
+            for ion in modelinput["ions"]:
+                reqs.append(ion["filei"])
+        reqs = list(
+            set(str(x).split("/")[0] for x in map(Path, reqs) if not x.is_absolute())
+        )
+        for req in reqs:
+            if Path(req).exists() and req not in self.linkfiles:
+                self.linkfiles[req] = req
+
+        # Link the required files to the run directory.
         for dst, src in self.linkfiles.items():
             src = Path(str(src).format(model=model)).resolve()
             if (
