@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import NamedTuple, TextIO
+from typing import Any, NamedTuple, TextIO
 
 from synspec import utils
 
@@ -171,3 +171,58 @@ def write55(config: SynConfig) -> str:
 def write55f(file: Path | str | TextIO, config: SynConfig) -> None:
     """Writes a SynConfig to a .55 file."""
     utils.write_to_file(file, write55(config))
+
+
+# Read the input file
+
+
+def readinput(text: str) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    tokenlines = list(utils.parsefortinput(text))
+
+    if len(tokenlines[0]) == 2:
+        result["teff"] = tokenlines[0][0]
+        result["grav"] = tokenlines[0][1]
+    else:
+        result["xmstar"] = tokenlines[0][0]
+        if result["xmstar"] > 0:
+            result["xmdot"] = tokenlines[0][1]
+            result["rstar"] = tokenlines[0][2]
+            result["reldst"] = tokenlines[0][3]
+        elif result["xmstar"] == 0:
+            result["teff"] = tokenlines[0][1]
+            result["qgrav"] = tokenlines[0][2]
+            result["dmtot"] = tokenlines[0][3]
+
+    result["lte"] = tokenlines[1][0]
+    result["ltgray"] = tokenlines[1][1]
+
+    result["finstd"] = tokenlines[2][0]
+    result["nfread"] = tokenlines[3][0]
+    result["natoms"] = natoms = int(tokenlines[4][0])
+
+    result["atoms"] = []
+    for i in range(natoms):
+        result["atoms"].append(
+            {
+                "mode": tokenlines[5 + i][0],
+                "abd": tokenlines[5 + i][1],
+                "modpf": tokenlines[5 + i][2],
+            }
+        )
+
+    result["ions"] = []
+    for line in tokenlines[5 + natoms :]:  # noqa: E203
+        if line[3] == 0:
+            result["ions"].append(
+                {
+                    "iat": line[0],
+                    "iz": line[1],
+                    "nlevs": line[2],
+                    "ilvlin": line[4],
+                    "nonstd": line[5],
+                    "typion": line[6],
+                    "filei": line[7],
+                }
+            )
+    return result

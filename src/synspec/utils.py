@@ -2,7 +2,7 @@ import time
 import uuid
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator, TextIO
+from typing import Any, Iterator, Sequence, TextIO
 
 
 def symlinkf(
@@ -100,3 +100,68 @@ def fortfloat(text: str) -> float:
             return float(text)
         else:
             raise
+
+
+def tokensfort(line: str) -> Sequence[str | int | float]:
+    if line == "":
+        return []
+    if line[0] == "*":
+        return []
+    if "!" in line:
+        line = line[: line.index("!")]
+    tokens: list[Any] = quotesplit(line.strip())
+    tokens = list(filter(lambda x: x != "", tokens))
+    for i, token in enumerate(tokens):
+        if token in "TtFf":
+            tokens[i] = token.lower() == "t"
+        if token[0] == "'" and token[-1] == "'":
+            tokens[i] = token[1:-1]
+            continue
+        if token.isdigit():
+            tokens[i] = int(token)
+            continue
+        try:
+            tokens[i] = fortfloat(token)
+            continue
+        except ValueError:
+            pass
+    return tokens
+
+
+def parsefortinput(text: str) -> Iterator[Sequence[str | int | float]]:
+    for line in text.splitlines():
+        tokens = tokensfort(line)
+        if tokens:
+            yield tokens
+
+
+def quotesplit(text: str, quotechar: str = "'") -> list[str]:
+    """
+    Split text into tokens, respecting quotes.
+
+    Parameters
+    ----------
+    text : str
+        Text to split.
+    quotechar : str
+        Quote character to use.
+
+    Returns
+    -------
+    tokens : list[str]
+        List of tokens.
+    """
+    tokens = []
+    j = -1
+    inquote = False
+    for i, c in enumerate(text):
+        if text[i] == quotechar:
+            inquote = not inquote
+            continue
+        if not inquote and c == " ":
+            if i > j + 1:
+                tokens.append(text[j + 1 : i])  # noqa: E203
+            j = i
+    if i > j and text[-1] != " ":
+        tokens.append(text[j + 1 :])  # noqa: E203
+    return tokens
