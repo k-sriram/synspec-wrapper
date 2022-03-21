@@ -178,3 +178,57 @@ def test_write55_1() -> None:
 21.0
 """
     )
+
+
+def test_readinput():
+    with open("tests/models/hhe35lt/input/hhe35lt.5") as f:
+        text = f.read()
+
+    assert units.readinput(text) == {
+        "teff": 35000.0,
+        "grav": 4.0,
+        "lte": True,
+        "ltgray": True,
+        "finstd": "",
+        "nfread": 50,
+        "natoms": 8,
+        "atoms": [
+            {"mode": 2, "abd": 0, "modpf": 0},
+            {"mode": 2, "abd": 0, "modpf": 0},
+            {"mode": 0, "abd": 0, "modpf": 0},
+            {"mode": 0, "abd": 0, "modpf": 0},
+            {"mode": 0, "abd": 0, "modpf": 0},
+            {"mode": 1, "abd": 0, "modpf": 0},
+            {"mode": 1, "abd": 0, "modpf": 0},
+            {"mode": 1, "abd": 0, "modpf": 0},
+        ],
+        "ions": [
+            {
+                "iat": 1,
+                "iz": 0,
+                "nlevs": 9,
+                "ilvlin": 100,
+                "nonstd": 0,
+                "typion": " H 1",
+                "filei": "./data/h1.dat",
+            },
+            {
+                "iat": 2,
+                "iz": 0,
+                "nlevs": 14,
+                "ilvlin": 100,
+                "nonstd": 0,
+                "typion": "He 1",
+                "filei": "./data/he1.dat",
+            },
+            {
+                "iat": 2,
+                "iz": 1,
+                "nlevs": 14,
+                "ilvlin": 100,
+                "nonstd": 0,
+                "typion": "He 2",
+                "filei": "./data/he2.dat",
+            },
+        ],
+    }
