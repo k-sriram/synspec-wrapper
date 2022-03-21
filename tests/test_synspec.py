@@ -282,3 +282,24 @@ def test_synspec_autoinclude_fort56(tempdir: str) -> None:
     synspec.run(model)
 
     compare_files(f"{modeldir}/output/{model}.spec", f"{tempdir}/fort.7")
+
+
+def test_synspec_autoinclude_readinput(tempdir: str) -> None:
+    """Test that the Synspec object automatically includes the files detected in
+    the input file ({model}.5).
+    """
+    model = "EHeT30g4"
+    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
+
+    modeldir = copy_model(model, files, tempdir)
+
+    os.chdir(tempdir)
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    # Don't explicity add these links
+    # synspec.add_link("data")
+    # synspec.add_link("nst_l")
+    synspec.run(model)
+
+    compare_files(f"{modeldir}/output/{model}.spec", f"{tempdir}/fort.7")
