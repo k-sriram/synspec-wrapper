@@ -101,11 +101,21 @@ class Synspec:
             for ion in modelinput["ions"]:
                 reqs.append(ion["filei"])
         reqs = list(
-            set(str(x).split("/")[0] for x in map(Path, reqs) if not x.is_absolute())
+            {str(x).split("/")[0] for x in map(Path, reqs) if not x.is_absolute()}
         )
         for req in reqs:
             if Path(req).exists() and req not in self.linkfiles:
                 self.linkfiles[req] = req
+
+        # Detect need for fort.56
+        if "fort.56" not in self.linkfiles:
+            cofigfile = Path(str(self.linkfiles["fort.55"]).format(model=model))
+            config = units.read55f(cofigfile)
+            if config.ichemc != 0:
+                if Path("fort.56").is_file():
+                    self.linkfiles["fort.56"] = "fort.56"
+                else:
+                    raise FileNotFoundError("Need for fort.56 detected but not found")
 
         # Link the required files to the run directory.
         for dst, src in self.linkfiles.items():
@@ -115,14 +125,6 @@ class Synspec:
                 or src != Path(str(dst).format(model=model)).resolve()
             ):
                 utils.symlinkf(src, rundir / dst.format(model=model))
-        # Extra auto-links
-        if "fort.56" not in self.linkfiles and not Path(rundir / "fort.56").is_file():
-            config = units.read55f(rundir / "fort.55")
-            if config.ichemc != 0:
-                if Path("fort.56").is_file():
-                    utils.symlinkf("fort.56", rundir / "fort.56")
-                else:
-                    raise FileNotFoundError("Need for fort.56 detected but not found")
 
     def _check_files(self, model: str, rundir: Path) -> None:
         """Checks if the required files exist."""
