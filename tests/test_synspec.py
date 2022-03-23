@@ -351,3 +351,25 @@ def test_synspec_dirmodel_indir(tempdir: str) -> None:
     synspec.run(f"model/{model}", rundir=rundir)
 
     compare_files(f"{modeldir}/output/{model}.spec", f"{rundir}/{model}.spec")
+    compare_files(f"{modeldir}/input/{model}.5", f"{rundir}/{model}.5")
+
+
+def test_addlink_relpath(tempdir: str) -> None:
+    """Test that the Synspec object can add a link when a relative path exists"""
+    model = "hhe35lt"
+    files = ["fort.19", "fort.55", "{model}.5", "{model}.7"]
+
+    modeldir = copy_model(model, files, tempdir)
+    rundir = f"{tempdir}/run"
+
+    os.chdir(tempdir)
+    os.mkdir(rundir)
+    os.symlink("../fort.19", "run/fort.19")
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    synspec.add_link("data")
+    synspec.add_link("linelist", "../input/fort.19")
+    synspec.run(model, rundir=rundir)
+
+    compare_files(f"{modeldir}/output/{model}.spec", f"{rundir}/{model}.spec")
