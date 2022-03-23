@@ -132,11 +132,18 @@ def symlinkf(
 ) -> None:
     """Symlink a file. If the file already exists, delete it first."""
     dst = Path(dst)
-    if dst.resolve() == Path(src).resolve():
+    if resolve_parent(dst) == resolve_parent(Path(src)):
         raise ValueError(f"src and dst are the same: {dst.resolve()}")
     if dst.exists():
         dst.unlink()
     dst.symlink_to(src, target_is_directory=target_is_directory)
+
+
+def resolve_parent(path: Path) -> Path:
+    """Resolve a path to its parent directory."""
+    if not path.is_symlink():
+        return path.resolve()
+    return path.parent.resolve().joinpath(path.name)
 
 
 @contextmanager
