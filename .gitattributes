@@ -1,2 +1,2 @@
-# Exclude dat files from linguist
-tests/models/* linguist-generated
+# Exclude models files from linguist
+tests/models/** linguist-generated
