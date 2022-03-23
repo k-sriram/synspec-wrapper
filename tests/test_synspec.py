@@ -369,7 +369,6 @@ def test_addlink_relpath(tempdir: str) -> None:
     # Create a Synspec object.
     synspec = Synspec("synspec", 51)
     synspec.add_link("data")
-    synspec.add_link("linelist", "../input/fort.19")
     synspec.run(model, rundir=rundir)
 
     compare_files(f"{modeldir}/output/{model}.spec", f"{rundir}/{model}.spec")
