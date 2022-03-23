@@ -326,3 +326,28 @@ def test_synspec_model_with_dirname(tempdir: str) -> None:
     synspec.run(f"model/{model}")
 
     compare_files(f"{modeldir}/output/{model}.spec", f"{tempdir}/{model}.spec")
+
+
+def test_synspec_dirmodel_indir(tempdir: str) -> None:
+    """Test that the Synspec object can run a model which is in a different
+    directory.
+    """
+    model = "hhe35lt"
+    files = ["fort.19", "fort.55"]
+
+    modeldir = copy_model(model, files, tempdir)
+    runmoddir = f"{tempdir}/model"
+    os.mkdir(runmoddir)
+    shutil.copy(f"{modeldir}/input/{model}.5", runmoddir)
+    shutil.copy(f"{modeldir}/input/{model}.7", runmoddir)
+
+    rundir = f"{tempdir}/run"
+
+    os.chdir(tempdir)
+
+    # Create a Synspec object.
+    synspec = Synspec("synspec", 51)
+    synspec.add_link("data")
+    synspec.run(f"model/{model}", rundir=rundir)
+
+    compare_files(f"{modeldir}/output/{model}.spec", f"{rundir}/{model}.spec")
