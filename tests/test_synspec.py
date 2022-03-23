@@ -208,7 +208,7 @@ def test_synspec_no_model(tempdir: str) -> None:
 
     # Create a Synspec object.
     synspec = Synspec("synspec", 51)
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(TypeError):
         synspec.run(None)  # type: ignore
 
 

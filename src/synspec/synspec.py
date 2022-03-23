@@ -18,8 +18,8 @@ class Synspec:
         self.linkfiles: dict[str, str | Path] = {  # default links
             "fort.19": "fort.19",
             "fort.55": "fort.55",
-            "{model}.5": "{model}.5",
-            "{model}.7": "{model}.7",
+            "{model}.5": "{modelpath}.5",
+            "{model}.7": "{modelpath}.7",
         }
 
     def add_link(self, linkfrom: str, linkto: str = None) -> None:
@@ -42,7 +42,8 @@ class Synspec:
         outdir: directory to copy the output files to.
         outfile: name (without extension) of the output files.
         """
-
+        modelpath = Path(model).resolve()
+        model = modelpath.name
         if rundir is None:
             if outdir is None:
                 outdir = Path.cwd()
@@ -54,7 +55,7 @@ class Synspec:
                 utils.folderlock, path=rundir, lockfn="synspec.lock"
             )
         with rdprovider() as rundir:
-            self._copy_to_rundir(model, rundir)
+            self._copy_to_rundir(model, modelpath, rundir)
             self._check_files(model, rundir)
             self._run(model, rundir)
             self._extract_outfiles(model, rundir, outdir, outfile)
@@ -89,9 +90,11 @@ class Synspec:
             shutil.copyfile(rundir / f"fort.{unit}", outdir / f"{outfile}.{ext}")
         shutil.copyfile(rundir / "fort.log", outdir / f"{outfile}.log")
 
-    def _copy_to_rundir(self, model: str, rundir: Path) -> None:
+    def _copy_to_rundir(self, model: str, modelpath: Path, rundir: Path) -> None:
         # Read the input file to see if extra links are required.
-        inputfile = str(self.linkfiles["{model}.5"]).format(model=model)
+        inputfile = str(self.linkfiles["{model}.5"]).format(
+            model=model, modelpath=modelpath
+        )
         with open(inputfile) as f:
             modelinput = units.readinput(f.read())
         reqs = []
@@ -119,12 +122,15 @@ class Synspec:
 
         # Link the required files to the run directory.
         for dst, src in self.linkfiles.items():
-            src = Path(str(src).format(model=model)).resolve()
+            src = Path(str(src).format(model=model, modelpath=modelpath)).resolve()
             if (
                 rundir != Path.cwd().resolve()
-                or src != Path(str(dst).format(model=model)).resolve()
+                or src
+                != Path(str(dst).format(model=model, modelpath=modelpath)).resolve()
             ):
-                utils.symlinkf(src, rundir / dst.format(model=model))
+                utils.symlinkf(
+                    src, rundir / dst.format(model=model, modelpath=modelpath)
+                )
 
     def _check_files(self, model: str, rundir: Path) -> None:
         """Checks if the required files exist."""
