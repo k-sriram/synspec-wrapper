@@ -104,8 +104,13 @@ class Synspec:
             for ion in modelinput["ions"]:
                 reqs.append(ion["filei"])
         reqs = list(
-            {str(x).split("/")[0] for x in map(Path, reqs) if not x.is_absolute()}
+            {
+                str(x).split("/", maxsplit=1)[0]
+                for x in map(Path, reqs)
+                if not x.is_absolute()
+            }
         )
+
         for req in reqs:
             if Path(req).exists() and req not in self.linkfiles:
                 self.linkfiles[req] = req
